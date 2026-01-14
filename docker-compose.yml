@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+    postgres:
+        image: postgres:latest
+        container_name: ipswd_postgres
+        environment:
+            POSTGRES_DB: ipsdb
+            POSTGRES_USER: ipsuser
+            POSTGRES_PASSWORD: ipspass
+        volumes:
+            - pgdata:/var/lib/postgresql
+        ports:
+            - "5432:5432"
+    ipswd:
+        build: .
+        shm_size: 8g
+        privileged: true
+        container_name: ipswd_server
+        depends_on:
+            - postgres
+        environment:
+            # Postgres settings
+            POSTGRES_HOST: postgres
+            POSTGRES_PORT: 5432
+            POSTGRES_DB: ipsdb
+            POSTGRES_USER: ipsuser
+            POSTGRES_PASSWORD: ipspass
+
+            # Daemon settings
+            DAEMON_HOST: 0.0.0.0
+            DAEMON_PORT: 3993
+            DAEMON_DEBUG: true
+
+        volumes:
+            - ./data:/data
+        ports:
+            - "3993:3993"
+volumes:
+    pgdata:
